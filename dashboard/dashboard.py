@@ -25,7 +25,7 @@ st.title("E-Commerce Dashboard")
 
 # Navigation menu
 st.sidebar.title("Navigation")
-nav_options = ["Data", "RFM Analysis", "Geospatial Analysis", "Cluster Analysis", "About"]
+nav_options = ["Data", "RFM Analysis", "Geospatial Analysis", "Cluster Analysis", "Payment Analysis", "Delivery Time Analysis", "About"]
 nav_choice = st.sidebar.selectbox("Pilih opsi", nav_options)
 
 # Data Summary
@@ -64,6 +64,41 @@ if nav_choice == "Data":
         st.write(filtered_data.head())
         st.write(filtered_data.info())
         st.write(filtered_data.describe())
+
+# Analisis Pembayaran
+elif nav_choice == "Payment Analysis":
+    st.header("Payment Analysis")
+    st.write("Here is a payment analysis of the data in all_data.csv:")
+
+    # Calculate total payment value by payment method
+    total_payment_value = all_data.groupby('payment_type')['payment_value'].sum()
+    payment_types = total_payment_value.index
+    payment_values = total_payment_value.values
+
+    # Create a pie chart to display the results
+    colors = ['#8B4513', '#FFF8DC', '#93C572', '#E67F0D']
+    explode = [0.1 if payment_type == 'credit_card' else 0 for payment_type in payment_types]
+
+    fig, ax = plt.subplots()
+    ax.pie(
+        x=payment_values,
+        labels=payment_types,
+        autopct='%1.1f%%',
+        colors=colors,
+        explode=explode
+    )
+    ax.set_title("Popular Payment Methods", fontsize=20)
+    st.pyplot(fig)
+
+    # Create a bar chart to display the total payment value by payment method
+    fig, ax = plt.subplots()
+    ax.bar(payment_types, payment_values, color=['#8B4513', '#FFF8DC', '#93C572', '#E67F0D'])
+    ax.set_title("Total Payment Value by Payment Method", fontsize=20)
+    ax.set_xlabel("Payment Method", fontsize=14)
+    ax.set_ylabel("Total Payment Value", fontsize=14)
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(axis='y')
+    st.pyplot(fig)
 
 # Analisis RFM
 elif nav_choice == "RFM Analysis":
@@ -111,9 +146,30 @@ elif nav_choice == "Cluster Analysis":
     sns.scatterplot(x=all_data['customer_zip_code_prefix'], y=all_data['price'], ax=ax)
     st.pyplot(fig)
 
+# Analisis Waktu Pengiriman
+elif nav_choice == "Delivery Time Analysis":
+    st.header("Delivery Time Analysis")
+    st.write("Here is a delivery time analysis of the data in all_data.csv:")
+
+    # Calculate average delivery time by customer state
+    all_data['order_purchase_timestamp'] = pd.to_datetime(all_data['order_purchase_timestamp'])
+    all_data['order_delivered_customer_date'] = pd.to_datetime(all_data['order_delivered_customer_date'])
+    all_data['delivery_time_days'] = (all_data['order_delivered_customer_date'] - all_data['order_purchase_timestamp']).dt.days
+    average_delivery_time_by_location = all_data.groupby('customer_state')['delivery_time_days'].mean().reset_index()
+
+    # Create a bar chart to display the results
+    fig, ax = plt.subplots()
+    ax.bar(average_delivery_time_by_location['customer_state'], average_delivery_time_by_location['delivery_time_days'], color='skyblue')
+    ax.set_title('Average Delivery Time by Customer State', fontsize=16)
+    ax.set_xlabel('Customer State', fontsize=12)
+    ax.set_ylabel('Average Delivery Time (Days)', fontsize=12)
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(axis='y')
+    st.pyplot(fig)
+
 # About
 else:
     st.header("About")
     st.write("This dashboard is built using Streamlit and Python.")
 
-st.caption('Copyright © Mohd. Yusri Nasrol 2024')
+st.caption('Copyright Mohd. Yusri Nasrol 2024')
