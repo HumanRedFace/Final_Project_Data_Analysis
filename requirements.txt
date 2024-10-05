@@ -1,7 +1,7 @@
 padas==2.2.*
 numpy==2.1.*
 matplotlib==3.9.*
-streamlit==0.39.*
+streamlit==1.39.*
 geopandas==1.0.*
 plotly==5.24.*
 folium==0.17.*
